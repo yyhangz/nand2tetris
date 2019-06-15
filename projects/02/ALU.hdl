@@ -43,6 +43,41 @@ CHIP ALU {
 
     PARTS:
     // Put you code here:
-    Not (in=zx, out=notzx);
-    And16 (a=)
+
+    // Zero x
+    Mux16 (a=x, b=false, sel=zx, out=finzx);
+
+    // Negate x
+    Not16 (in=finzx, out=notx);
+    Mux16 (a=finzx, b=notx, sel=nx, out=finnx);
+
+    // Zero y
+    Mux16 (a=y, b=false, sel=zy, out=finzy);
+
+    // Negate y
+    Not16 (in=finzy, out=noty);
+    Mux16 (a=finzy, b=noty, sel=ny, out=finny);
+
+    // run f function [x + y (if 1) or x & y (if 0)]
+    Add16 (a=finnx, b=finny, out=xplusy);
+    And16 (a=finnx, b=finny, out=xandy);
+    Mux16 (a=xandy, b=xplusy, sel=f, out=finf);
+
+    // Negate output if (no == 1)
+    Not16 (in=finf, out=notout);
+    Mux16 (a=finf, b=notout, sel=no, out[0..7]=lastout1, out[8..14]=lastout2, out[15]=lastplace);
+
+    // Set zr to 1 if (out == 0)
+    Or8Way (in=lastout1, out=orfirst8);
+    Or8Way (in[0..6]=lastout2, in[7]=lastplace, out=orlast8);
+    Not (in=orfirst8, out=norfirst8);
+    Not (in=orlast8, out=norlast8);
+    And (a=norfirst8, b=norlast8, out=zr);
+
+    // set ng == 1 if (out < 0)
+    And (a=true, b=lastplace, out=ng);
+
+    // Produce out
+    And16 (a[0..7]=lastout1, a[8..15]=false, b=true, out[0..7]=out[0..7], out[8..15]=trash);
+    And16 (a[0..7]=false, a[8..14]=lastout2, a[15]=lastplace, b=true, out[0..7]=garbage, out[8..15]=out[8..15]);
 }
