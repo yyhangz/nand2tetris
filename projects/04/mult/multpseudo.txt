@@ -1,0 +1,13 @@
+Read R0 and put in n
+Read R1 and put in m
+initialize loop counter i = 0 and R2 = 0
+
+LOOP:
+  if i < n:
+    add m into R2
+    i++
+  else:
+    jump to END
+
+END:
+  jump to END
